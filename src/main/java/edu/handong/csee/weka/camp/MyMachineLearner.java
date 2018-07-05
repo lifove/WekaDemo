@@ -101,9 +101,7 @@ public class MyMachineLearner {
 		Instances newData = null;
 		
 		try {
-			filter.setInputFormat(data);
-
-			// generate new data
+						// generate new data
 			newData = Filter.useFilter(data, filter);
 		} catch (Exception e) {
 			e.printStackTrace();
