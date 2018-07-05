@@ -44,29 +44,28 @@ public class MyMachineLearner {
 			testData.setClassIndex(trainingData.numAttributes()-1);
 			reader.close();
 			
-			// preprocessing
+			// (2) preprocessing
 			AttributeSelection attrSelector = getAttributesSelectionFilterByCfsSubsetEval(trainingData);
 			trainingData = selectFeaturesByAttributeSelection(attrSelector, trainingData);
 			testData = selectFeaturesByAttributeSelection(attrSelector, testData);
 			
-			// (2) Build a learner
+			// (3) Build a learner
 			Classifier cls = new J48();
 			cls.buildClassifier(trainingData);
 
-			// (3) Test
+			// (4) Test
 			Evaluation eval = new Evaluation(trainingData);
 			eval.evaluateModel(cls, testData);
 
-			// (4) Show prediction results
+			// (5) Show prediction results
 			int i=0;
 			for(Prediction prediction:eval.predictions()) {
 				String predictedValue = getClassValue(trainingData,prediction.predicted());
 				System.out.println("Instance " + (++i) + " " + predictedValue);
 			}
 
-			System.out.println("\n\n\n=====Test summary in case the test set has labels");
-			System.out.println(eval.toSummaryString());
-
+			showSummary(eval,testData);
+			
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -79,10 +78,89 @@ public class MyMachineLearner {
 		}		
 	}
 
+	private void showSummary(Evaluation eval,Instances instances) {
+		for(int i=0; i<instances.classAttribute().numValues();i++) {
+			System.out.println("\n*** Summary of Class " + instances.classAttribute().value(i));
+			System.out.println("Precision " + eval.precision(i));
+			System.out.println("Recall " + eval.recall(i));
+			System.out.println("F-Measure " + eval.fMeasure(i));
+		}
+	}
+
 	String getClassValue(Instances instances, double index) {
 		return instances.attribute(instances.classIndex()).value((int) index);
 	}
+	
+	/**
+	 * Feature selection by using a specific filter (AttributeSelection)
+	 * @param filter
+	 * @param data
+	 * @return Instances instances
+	 */
+	public Instances selectFeaturesByAttributeSelection(AttributeSelection filter,Instances data) {
+		Instances newData = null;
+		
+		try {
+			filter.setInputFormat(data);
 
+			// generate new data
+			newData = Filter.useFilter(data, filter);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return newData;
+	}
+	
+	/**
+	 * Feature selection filter by CfsSubsetEval
+	 * @param data
+	 * @return AttributeSelection filter
+	 */
+	public AttributeSelection getAttributesSelectionFilterByCfsSubsetEval(Instances data){
+
+		AttributeSelection filter = new AttributeSelection();  // package weka.filters.supervised.attribute!
+		CfsSubsetEval eval = new CfsSubsetEval();
+		BestFirst search = new BestFirst();
+		//search.ssetSearchBackwards(false);
+		filter.setEvaluator(eval);
+		filter.setSearch(search);
+
+		try {
+			filter.setInputFormat(data);
+
+			// generate new data
+			//newData = Filter.useFilter(data, filter);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return filter;
+	}
+	
+	/**
+	 * Feature selection filter by GainRatioAttributeEval
+	 * @param data
+	 * @return AttributeSelection filter
+	 */
+	public AttributeSelection getAttributesSelectionFilterByGainRatioAttributeEval(Instances data){
+
+		AttributeSelection filter = new AttributeSelection();  // package weka.filters.supervised.attribute!
+		GainRatioAttributeEval eval = new GainRatioAttributeEval();
+		Ranker search = new Ranker();
+		search.setThreshold(-1.7976931348623157E308);
+		search.setNumToSelect(-1);
+		filter.setEvaluator(eval);
+		filter.setSearch(search);
+		try {
+			filter.setInputFormat(data);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return filter;
+	}
+	
 	/**
 	 * Get instances by removing specific attributes
 	 * @param instances
@@ -131,94 +209,5 @@ public class MyMachineLearner {
 		}
 
 		return newInstances;
-	}
-	
-	/**
-	 * Feature selection by GainRatioAttributeEval
-	 * @param data
-	 * @return newData with selected attributes
-	 */
-	static public Instances featrueSelectionByGainRatioAttributeEval(Instances data){
-		Instances newData = null;
-
-		AttributeSelection filter = new AttributeSelection();  // package weka.filters.supervised.attribute!
-		GainRatioAttributeEval eval = new GainRatioAttributeEval();
-		Ranker search = new Ranker();
-		search.setThreshold(-1.7976931348623157E308);
-		search.setNumToSelect(-1);
-		filter.setEvaluator(eval);
-		filter.setSearch(search);
-		try {
-			filter.setInputFormat(data);
-
-			// generate new data
-			newData = Filter.useFilter(data, filter);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return newData;
-	}
-
-	/**
-	 * Feature selection by CfsSubsetEval
-	 * @param data
-	 * @return newData with selected attributes
-	 */
-	public Instances featrueSelectionByCfsSubsetEval(Instances data){
-		Instances newData = null;
-
-		AttributeSelection filter = getAttributesSelectionFilterByCfsSubsetEval(data);  // package weka.filters.supervised.attribute!
-		try {
-			filter.setInputFormat(data);
-
-			// generate new data
-			newData = Filter.useFilter(data, filter);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return newData;
-	}
-	
-	/**
-	 * Feature selection filter by CfsSubsetEval
-	 * @param data
-	 * @return AttributeSelection filter
-	 */
-	public AttributeSelection getAttributesSelectionFilterByCfsSubsetEval(Instances data){
-
-		AttributeSelection filter = new AttributeSelection();  // package weka.filters.supervised.attribute!
-		CfsSubsetEval eval = new CfsSubsetEval();
-		BestFirst search = new BestFirst();
-		//search.ssetSearchBackwards(false);
-		filter.setEvaluator(eval);
-		filter.setSearch(search);
-
-		try {
-			filter.setInputFormat(data);
-
-			// generate new data
-			//newData = Filter.useFilter(data, filter);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return filter;
-	}
-	
-	public Instances selectFeaturesByAttributeSelection(AttributeSelection filter,Instances data) {
-		Instances newData = null;
-		
-		try {
-			filter.setInputFormat(data);
-
-			// generate new data
-			newData = Filter.useFilter(data, filter);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		return newData;
 	}
 }
