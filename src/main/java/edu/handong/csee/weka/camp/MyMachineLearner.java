@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 
 import weka.attributeSelection.GainRatioAttributeEval;
 import weka.attributeSelection.Ranker;
@@ -17,6 +18,8 @@ import weka.filters.Filter;
 import weka.filters.supervised.attribute.AttributeSelection;
 
 public class MyMachineLearner {
+	
+	HashMap<String,Double> results = new HashMap<String,Double>();
 
 	public static void main(String[] args) {
 		MyMachineLearner myTool = new MyMachineLearner();
@@ -56,7 +59,20 @@ public class MyMachineLearner {
 			arguments[0] = dataPaths[2];
 			arguments[1] = dataPaths[1];
 			myTool.run(arguments);
+			
+			HashMap<String,Double> finalResults = myTool.getResults();
+			Double totalSum = 0.0;
+			for(String key:finalResults.keySet()) {
+				System.out.println(key + "," + finalResults.get(key));
+				totalSum += finalResults.get(key);
+			}
+			
+			System.out.println("Average=" + (totalSum/6));
 		}
+	}
+	
+	public HashMap<String,Double> getResults(){
+		return results;
 	}
 
 	private void run(String[] args) {
@@ -96,8 +112,18 @@ public class MyMachineLearner {
 				System.out.println("Instance " + (++i) + " " + predictedValue);
 			}*/
 			
+			Double fValue = eval.fMeasure(0);
 			System.out.println(trainingArffPath + "," + testArffPath + "," + mlAlgorithm+
-								"," + eval.fMeasure(0));
+								"," + fValue);
+			String key = trainingArffPath + "," + testArffPath;
+			if(!results.containsKey(key)) {
+				results.put(key, fValue);
+			} else {
+				Double currentF = results.get(key);
+				
+				if(currentF < fValue)
+					results.put(key, fValue);
+			}
 
 			//showSummary(eval,testData);
 			
