@@ -6,6 +6,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 
+import weka.attributeSelection.BestFirst;
+import weka.attributeSelection.CfsSubsetEval;
 import weka.attributeSelection.GainRatioAttributeEval;
 import weka.attributeSelection.Ranker;
 import weka.classifiers.Classifier;
@@ -92,7 +94,7 @@ public class MyMachineLearner {
 			testData.setClassIndex(testData.numAttributes()-1);
 			
 			// (2) Preprocess: Feature selection
-			AttributeSelection attrSelector = getAttributesSelectionFilterByGainRatioAttributeEval(trainingData);
+			AttributeSelection attrSelector = getAttributesSelectionFilterByCfsSubsetEval(trainingData);
 			trainingData = selectFeaturesByAttributeSelection(attrSelector,trainingData);
 			testData = selectFeaturesByAttributeSelection(attrSelector,testData);
 			
@@ -152,6 +154,27 @@ public class MyMachineLearner {
 		Ranker search = new Ranker();
 		search.setThreshold(-1.7976931348623157E308);
 		search.setNumToSelect(-1);
+		filter.setEvaluator(eval);
+		filter.setSearch(search);
+		try {
+			filter.setInputFormat(data);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return filter;
+	}
+	
+	/**
+	 * Feature selection filter by GainRatioAttributeEval
+	 * @param data
+	 * @return AttributeSelection filter
+	 */
+	public AttributeSelection getAttributesSelectionFilterByCfsSubsetEval(Instances data){
+
+		AttributeSelection filter = new AttributeSelection();  // package weka.filters.supervised.attribute!
+		CfsSubsetEval eval = new CfsSubsetEval();
+		BestFirst search = new BestFirst();
 		filter.setEvaluator(eval);
 		filter.setSearch(search);
 		try {
