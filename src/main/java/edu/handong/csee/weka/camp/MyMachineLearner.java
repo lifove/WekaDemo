@@ -21,6 +21,8 @@ public class MyMachineLearner {
 	public static void main(String[] args) {
 		MyMachineLearner myTool = new MyMachineLearner();
 		
+		String[] arguments = {"","",""};
+		
 		String[] mlAlgorithms = {"weka.classifiers.functions.Logistic",
 				"weka.classifiers.bayes.BayesNet",
 				"weka.classifiers.functions.SMO",
@@ -30,31 +32,30 @@ public class MyMachineLearner {
 		String[] dataPaths = {"Apache.arff","Safe.arff","Zxing.arff"};
 		
 		for(String mlAlg:mlAlgorithms) {
-			args[2] = mlAlg;
+			arguments[2] = mlAlg;
+			arguments[0] = dataPaths[0];
+			arguments[1] = dataPaths[1];
+			myTool.run(arguments);
 			
-			args[0] = dataPaths[0];
-			args[1] = dataPaths[1];
-			myTool.run(args);
+			arguments[0] = dataPaths[0];
+			arguments[1] = dataPaths[2];
+			myTool.run(arguments);
 			
-			args[0] = dataPaths[0];
-			args[1] = dataPaths[2];
-			myTool.run(args);
+			arguments[0] = dataPaths[1];
+			arguments[1] = dataPaths[0];
+			myTool.run(arguments);
 			
-			args[0] = dataPaths[1];
-			args[1] = dataPaths[0];
-			myTool.run(args);
+			arguments[0] = dataPaths[1];
+			arguments[1] = dataPaths[2];
+			myTool.run(arguments);
 			
-			args[0] = dataPaths[1];
-			args[1] = dataPaths[2];
-			myTool.run(args);
+			arguments[0] = dataPaths[2];
+			arguments[1] = dataPaths[0];
+			myTool.run(arguments);
 			
-			args[0] = dataPaths[2];
-			args[1] = dataPaths[0];
-			myTool.run(args);
-			
-			args[0] = dataPaths[2];
-			args[1] = dataPaths[1];
-			myTool.run(args);
+			arguments[0] = dataPaths[2];
+			arguments[1] = dataPaths[1];
+			myTool.run(arguments);
 		}
 	}
 
